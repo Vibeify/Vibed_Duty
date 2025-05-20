@@ -76,6 +76,25 @@ function App() {
         fetchNui('setNuiFocus', { focus: isVisible, cursor: isVisible });
     }, [isVisible]);
 
+    // Add this to fire on any UI interaction
+    const markActive = () => {
+        fetchNui('playerActive');
+    };
+
+    // Call markActive on all relevant UI events
+    useEffect(() => {
+        if (isVisible) {
+            window.addEventListener('mousemove', markActive);
+            window.addEventListener('keydown', markActive);
+            window.addEventListener('mousedown', markActive);
+        }
+        return () => {
+            window.removeEventListener('mousemove', markActive);
+            window.removeEventListener('keydown', markActive);
+            window.removeEventListener('mousedown', markActive);
+        };
+    }, [isVisible]);
+
     const handleGoOnDuty = async () => {
         setLoading(true);
         setErrorMessage('');
