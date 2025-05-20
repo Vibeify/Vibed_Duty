@@ -65,7 +65,32 @@ end
 local function SendWebhook(type, embed)
     local url = Config.DiscordWebhookUrls[type]
     if not url then return end
+    local embedConfig = Config.WebhookEmbed and Config.WebhookEmbed[type] or {}
+    embed.color = embedConfig.color or embed.color
+    embed.author = { name = embedConfig.username or 'Duty Logger', icon_url = embedConfig.icon_url or '' }
+    if embedConfig.extra_fields then
+        for _, f in ipairs(embedConfig.extra_fields) do
+            table.insert(embed.fields, f)
+        end
+    end
     PerformHttpRequest(url, function() end, 'POST', json.encode({ embeds = {embed} }), { ['Content-Type'] = 'application/json' })
+end
+
+-- Utility: Get RP name from framework or fallback
+local function GetPlayerRPName(src)
+    if ESX then
+        local xPlayer = ESX.GetPlayerFromId(src)
+        if xPlayer and xPlayer.getName then return xPlayer.getName() end
+        if xPlayer and xPlayer.get('firstName') and xPlayer.get('lastName') then
+            return xPlayer.get('firstName') .. ' ' .. xPlayer.get('lastName')
+        end
+    elseif QBCore then
+        local qbPlayer = QBCore.Functions.GetPlayer(src)
+        if qbPlayer and qbPlayer.PlayerData and qbPlayer.PlayerData.charinfo then
+            return qbPlayer.PlayerData.charinfo.firstname .. ' ' .. qbPlayer.PlayerData.charinfo.lastname
+        end
+    end
+    return GetPlayerName(src)
 end
 
 -- Local file persistence for duty state
@@ -159,6 +184,7 @@ RegisterNetEvent('duty:goOnDuty', function(data)
             if Config.DutyStateChangeEvents.OnDuty then
                 TriggerEvent(Config.DutyStateChangeEvents.OnDuty, src, department, callsign)
             end
+            FrameworkOnDuty(src, department, callsign)
             TriggerClientEvent('duty:goOnDutyResult', src, { success = true })
         else
             TriggerClientEvent('duty:goOnDutyResult', src, { success = false, error = 'Failed to update Firestore.' })
@@ -196,6 +222,7 @@ RegisterNetEvent('duty:clockOff', function()
                 if Config.DutyStateChangeEvents.OffDuty then
                     TriggerEvent(Config.DutyStateChangeEvents.OffDuty, src)
                 end
+                FrameworkOffDuty(src)
                 TriggerClientEvent('duty:clockOffResult', src, { success = true })
             else
                 TriggerClientEvent('duty:clockOffResult', src, { success = false, error = 'Failed to update Firestore.' })
@@ -203,3 +230,101 @@ RegisterNetEvent('duty:clockOff', function()
         end)
     end)
 end)
+
+-- AFK/Timeout Handling
+local lastActive = {}
+local function UpdateLastActive(src)
+    lastActive[src] = os.time()
+end
+
+AddEventHandler('playerDropped', function(reason)
+    local src = source
+    local discordId = GetDiscordId(src)
+    if discordId and dutyState[discordId] and dutyState[discordId].onDuty then
+        SetDutyStatus(discordId, { onDuty = false }, function() end)
+        LogDutyChange((GetPlayerRPName(src) or 'Unknown') .. ' auto clocked OFF (disconnect)')
+    end
+    lastActive[src] = nil
+end)
+
+CreateThread(function()
+    while true do
+        Wait(60000)
+        if Config.AFKTimeoutMinutes and Config.AFKTimeoutMinutes > 0 then
+            local now = os.time()
+            for src, t in pairs(lastActive) do
+                if now - t > (Config.AFKTimeoutMinutes * 60) then
+                    local discordId = GetDiscordId(src)
+                    if discordId and dutyState[discordId] and dutyState[discordId].onDuty then
+                        SetDutyStatus(discordId, { onDuty = false }, function() end)
+                        LogDutyChange((GetPlayerRPName(src) or 'Unknown') .. ' auto clocked OFF (AFK)')
+                        TriggerClientEvent('duty:clockOffResult', src, { success = true, error = 'You were clocked off for being AFK.' })
+                    end
+                end
+            end
+        end
+    end
+end)
+
+AddEventHandler('playerConnecting', function()
+    UpdateLastActive(source)
+end)
+
+RegisterNetEvent('duty:playerActive', function()
+    UpdateLastActive(source)
+end)
+
+-- Admin Command: /dutycheck [id]
+RegisterCommand('dutycheck', function(source, args)
+    local src = source
+    local isAdmin = IsPlayerAceAllowed(src, 'command')
+    for _, group in ipairs(Config.AdminGroups or {}) do
+        if IsPlayerAceAllowed(src, group) then isAdmin = true end
+    end
+    if not isAdmin then
+        TriggerClientEvent('chat:addMessage', src, { args = { '^1SYSTEM', 'No permission.' } })
+        return
+    end
+    if not args[1] then
+        -- List all on-duty
+        local msg = '^2On Duty Players:^7\n'
+        for discordId, data in pairs(dutyState) do
+            if data.onDuty then
+                msg = msg .. (data.callsign or '?') .. ' | ' .. (data.department or '?') .. ' | ' .. (data.startTime and os.date('%H:%M', data.startTime) or '?') .. '\n'
+            end
+        end
+        TriggerClientEvent('chat:addMessage', src, { args = { 'Duty', msg } })
+    else
+        -- Show details for one
+        local id = args[1]
+        local discordId = GetDiscordId(tonumber(id))
+        if discordId and dutyState[discordId] then
+            local data = dutyState[discordId]
+            local msg = ('^3Callsign:^7 %s\n^3Department:^7 %s\n^3On Duty:^7 %s\n^3Since:^7 %s'):format(
+                data.callsign or '?', data.department or '?', tostring(data.onDuty), data.startTime and os.date('%c', data.startTime) or '?')
+            TriggerClientEvent('chat:addMessage', src, { args = { 'Duty', msg } })
+        else
+            TriggerClientEvent('chat:addMessage', src, { args = { '^1SYSTEM', 'No duty data for that player.' } })
+        end
+    end
+end)
+
+-- Framework Hooks: Set job/grade/uniform/radio on duty change
+local function FrameworkOnDuty(src, department, callsign)
+    if ESX then
+        local xPlayer = ESX.GetPlayerFromId(src)
+        if xPlayer and xPlayer.setJob then
+            xPlayer.setJob(department, 1)
+        end
+    elseif QBCore then
+        local qbPlayer = QBCore.Functions.GetPlayer(src)
+        if qbPlayer and qbPlayer.Functions.SetJob then
+            qbPlayer.Functions.SetJob(department, 1)
+        end
+    end
+    -- Add uniform/radio triggers here if needed
+end
+
+local function FrameworkOffDuty(src)
+    -- Optionally reset job/uniform/radio here
+end

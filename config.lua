@@ -1,9 +1,23 @@
 Config = {}
 
--- Discord Webhook URLs
+-- Discord Webhook URLs (customize color, icon, username)
 Config.DiscordWebhookUrls = {
     OnDuty = "https://discord.com/api/webhooks/ON_DUTY_WEBHOOK",
     OffDuty = "https://discord.com/api/webhooks/OFF_DUTY_WEBHOOK"
+}
+Config.WebhookEmbed = {
+    OnDuty = {
+        color = 65280, -- green
+        icon_url = "https://yourcdn.com/onduty.png",
+        username = "Duty Logger",
+        extra_fields = {} -- e.g. { { name = "Server", value = "VibedRP" } }
+    },
+    OffDuty = {
+        color = 16711680, -- red
+        icon_url = "https://yourcdn.com/offduty.png",
+        username = "Duty Logger",
+        extra_fields = {}
+    }
 }
 
 -- Department Mapping: [Discord Role ID] = Department Name
@@ -34,3 +48,7 @@ Config.LogToConsole = true -- Log all duty changes to server console
 Config.AllowedDepartments = { -- Restrict selectable departments (optional, leave empty for all)
     'Law Enforcement', 'Fire Department', 'EMS', 'Dispatch'
 }
+
+-- AFK/Timeout Handling
+Config.AFKTimeoutMinutes = 30 -- Minutes before auto clock-off (set 0 to disable)
+Config.AdminGroups = { 'admin', 'god', 'superadmin' } -- Add your admin ace groups here

@@ -1,3 +1,24 @@
+# Quickstart
+
+1. **Drag and Drop**
+   - Place the entire `Vibed_Duty` folder into your server's `resources` directory.
+
+2. **Configure**
+   - Open `config.lua` and set your Discord bot token, guild ID, webhook URLs, and department role IDs.
+   - (Optional) Adjust AFK timeout, admin groups, and webhook embed options.
+
+3. **Add to Server Config**
+   - Add `ensure Vibed_Duty` to your `server.cfg`.
+
+4. **Invite Your Bot**
+   - Make sure your Discord bot is in your server with the `View Members` permission.
+
+5. **Done!**
+   - Use `/duty` in-game to open the menu.
+   - Admins can use `/dutycheck` to see who is on duty.
+
+---
+
 # Vibed_Duty - Simple & Robust Duty Management for FiveM Emergency Services
 
 ## Overview
