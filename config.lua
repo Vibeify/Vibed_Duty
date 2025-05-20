@@ -23,12 +23,14 @@ Config.DutyStateChangeEvents = {
     OffDuty = "my_job_script:setOffDuty"  -- (source)
 }
 
--- Firestore/Firebase
-Config.Firebase = {
-    AppId = "__app_id",
-    ApiKey = "__firebase_config",
-    AuthToken = "__initial_auth_token"
-}
+-- Discord Bot Token (for direct Discord API calls)
+Config.DiscordBotToken = "YOUR_DISCORD_BOT_TOKEN_HERE"
+Config.DiscordGuildId = "YOUR_DISCORD_GUILD_ID_HERE"
 
--- Discord Bot API Endpoint (for role fetching)
-Config.DiscordBotApi = "http://localhost:3000/api/roles" -- Example endpoint
+-- Extra polish and usability options
+Config.Debug = true -- Print debug info to server console
+Config.Locale = "en" -- For future translation support
+Config.LogToConsole = true -- Log all duty changes to server console
+Config.AllowedDepartments = { -- Restrict selectable departments (optional, leave empty for all)
+    'Law Enforcement', 'Fire Department', 'EMS', 'Dispatch'
+}

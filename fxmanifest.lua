@@ -10,7 +10,6 @@ shared_scripts {
 }
 
 server_scripts {
-    '@oxmysql/lib/MySQL.lua', -- if using oxmysql, else remove
     'server/main.lua'
 }
 

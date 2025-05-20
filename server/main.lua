@@ -22,29 +22,43 @@ local function GetDiscordId(src)
     return nil
 end
 
--- Utility: HTTP request to Discord bot API for roles
+-- Utility: Fetch Discord roles directly using Discord API and bot token
 local function FetchDiscordRoles(discordId, cb)
-    PerformHttpRequest(Config.DiscordBotApi .. '/' .. discordId, function(status, data)
+    local endpoint = string.format("https://discord.com/api/guilds/%s/members/%s", Config.DiscordGuildId, discordId)
+    PerformHttpRequest(endpoint, function(status, data)
         if status == 200 and data then
-            local roles = json.decode(data)
-            cb(roles)
+            local member = json.decode(data)
+            cb(member.roles or {})
         else
             cb({})
         end
-    end, 'GET')
+    end, 'GET', '', {
+        ["Authorization"] = "Bot " .. Config.DiscordBotToken,
+        ["Content-Type"] = "application/json"
+    })
 end
 
--- Utility: Filter departments by roles
+-- Utility: Filter departments by roles and allowed departments
 local function GetAvailableDepartments(roles)
     local available = {}
     for roleId, dept in pairs(Config.Departments) do
         for _, r in ipairs(roles) do
             if tostring(roleId) == tostring(r) then
-                table.insert(available, { id = roleId, name = dept })
+                if not Config.AllowedDepartments or #Config.AllowedDepartments == 0 or table.contains(Config.AllowedDepartments, dept) then
+                    table.insert(available, { id = roleId, name = dept })
+                end
             end
         end
     end
     return available
+end
+
+-- Utility: Table contains helper
+function table.contains(tbl, val)
+    for _, v in ipairs(tbl) do
+        if v == val then return true end
+    end
+    return false
 end
 
 -- Utility: Send Discord webhook
@@ -54,14 +68,46 @@ local function SendWebhook(type, embed)
     PerformHttpRequest(url, function() end, 'POST', json.encode({ embeds = {embed} }), { ['Content-Type'] = 'application/json' })
 end
 
--- Utility: Firestore REST API (placeholder, implement with your preferred method)
+-- Local file persistence for duty state
+local dutyFile = 'data/duty_status.json'
+local dutyState = {}
+
+-- Load duty state from file
+local function LoadDutyState()
+    local file = LoadResourceFile(GetCurrentResourceName(), dutyFile)
+    if file then
+        local ok, data = pcall(json.decode, file)
+        if ok and type(data) == 'table' then
+            dutyState = data
+        end
+    end
+end
+
+-- Save duty state to file
+local function SaveDutyState()
+    SaveResourceFile(GetCurrentResourceName(), dutyFile, json.encode(dutyState, { indent = true }), -1)
+end
+
+LoadDutyState()
+
 local function SetDutyStatus(userId, data, cb)
-    -- Implement Firestore REST API call here
+    dutyState[userId] = dutyState[userId] or {}
+    for k, v in pairs(data) do
+        dutyState[userId][k] = v
+    end
+    SaveDutyState()
     cb(true)
 end
+
 local function GetDutyStatus(userId, cb)
-    -- Implement Firestore REST API call here
-    cb(nil)
+    cb(dutyState[userId])
+end
+
+-- Add debug/logging for all duty changes
+local function LogDutyChange(msg)
+    if Config.LogToConsole then
+        print("[Vibed_Duty] " .. msg)
+    end
 end
 
 -- /duty command
@@ -109,6 +155,7 @@ RegisterNetEvent('duty:goOnDuty', function(data)
                 },
                 color = 65280
             })
+            if Config.Debug then LogDutyChange((name or 'Unknown') .. ' went ON DUTY as ' .. department .. ' (' .. callsign .. ')') end
             if Config.DutyStateChangeEvents.OnDuty then
                 TriggerEvent(Config.DutyStateChangeEvents.OnDuty, src, department, callsign)
             end
@@ -145,6 +192,7 @@ RegisterNetEvent('duty:clockOff', function()
                     },
                     color = 16711680
                 })
+                if Config.Debug then LogDutyChange((name or 'Unknown') .. ' went OFF DUTY from ' .. (dutyData.department or 'N/A') .. ' (' .. (dutyData.callsign or 'N/A') .. ')') end
                 if Config.DutyStateChangeEvents.OffDuty then
                     TriggerEvent(Config.DutyStateChangeEvents.OffDuty, src)
                 end
