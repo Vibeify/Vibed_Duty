@@ -264,7 +264,7 @@ CreateThread(function()
                     if discordId and dutyState[discordId] and dutyState[discordId].onDuty then
                         SetDutyStatus(discordId, { onDuty = false }, function() end)
                         LogDutyChange((GetPlayerRPName(src) or 'Unknown') .. ' auto clocked OFF (AFK)')
-                        TriggerClientEvent('duty:clockOffResult', src, { success = true, error = 'You were clocked off for being AFK.' })
+                        TriggerClientEvent('duty:clockOffResult', src, { success = false, error = 'You were clocked off for being AFK.' })
                     end
                 end
             end
