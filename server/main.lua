@@ -38,16 +38,14 @@ local function FetchDiscordRoles(discordId, cb)
     })
 end
 
--- Utility: Filter departments by roles and allowed departments
+-- Utility: Filter departments by roles ONLY (no AllowedDepartments)
 local function GetAvailableDepartments(roles)
     local available = {}
+    local roleSet = {}
+    for _, r in ipairs(roles) do roleSet[tostring(r)] = true end
     for roleId, dept in pairs(Config.Departments) do
-        for _, r in ipairs(roles) do
-            if tostring(roleId) == tostring(r) then
-                if not Config.AllowedDepartments or #Config.AllowedDepartments == 0 or table.contains(Config.AllowedDepartments, dept) then
-                    table.insert(available, { id = roleId, name = dept })
-                end
-            end
+        if roleSet[tostring(roleId)] then
+            table.insert(available, { id = roleId, name = dept })
         end
     end
     return available

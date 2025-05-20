@@ -21,6 +21,7 @@ Config.WebhookEmbed = {
 }
 
 -- Department Mapping: [Discord Role ID] = Department Name
+-- Only departments for which the user has the corresponding Discord role will be visible/selectable
 Config.Departments = {
     ['123456789012345678'] = 'Law Enforcement',
     ['234567890123456789'] = 'Fire Department',
@@ -45,9 +46,6 @@ Config.DiscordGuildId = "YOUR_DISCORD_GUILD_ID_HERE"
 Config.Debug = true -- Print debug info to server console
 Config.Locale = "en" -- For future translation support
 Config.LogToConsole = true -- Log all duty changes to server console
-Config.AllowedDepartments = { -- Restrict selectable departments (optional, leave empty for all)
-    'Law Enforcement', 'Fire Department', 'EMS', 'Dispatch'
-}
 
 -- AFK/Timeout Handling
 Config.AFKTimeoutMinutes = 30 -- Minutes before auto clock-off (set 0 to disable)
