@@ -24,7 +24,8 @@ files {
     'html/static/js/*.js',
     'html/static/css/*.css',
     'html/static/media/*',
-    'html/favicon.ico'
+    'html/favicon.ico',
+    'html/style.css'
 }
 
 dependencies {
