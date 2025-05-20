@@ -46,14 +46,23 @@ local function FetchDiscordRoles(discordId, cb)
     })
 end
 
+-- Utility: Get department label from job name
+local function GetDepartmentLabel(job)
+    return Config.DepartmentLabels and Config.DepartmentLabels[job] or job
+end
+
 -- Utility: Filter departments by roles ONLY (no AllowedDepartments)
+-- Now returns { id = roleId, job = jobName, label = displayLabel }
 local function GetAvailableDepartments(roles)
     local available = {}
     local roleSet = {}
     for _, r in ipairs(roles) do roleSet[tostring(r)] = true end
     for roleId, dept in pairs(Config.Departments) do
         if roleSet[tostring(roleId)] then
-            table.insert(available, { id = roleId, name = dept })
+            -- Assume job name is the lowercase, no space version of dept (or add a mapping if needed)
+            local job = dept:lower():gsub("%s", "")
+            local label = GetDepartmentLabel(job)
+            table.insert(available, { id = roleId, job = job, label = label })
         end
     end
     return available
@@ -153,12 +162,17 @@ RegisterCommand('duty', function(source)
     FetchDiscordRoles(discordId, function(roles)
         local availableDepartments = GetAvailableDepartments(roles)
         GetDutyStatus(discordId, function(dutyData)
+            -- Send job and label to UI
+            local departmentJob = dutyData and dutyData.department or nil
+            local departmentLabel = departmentJob and GetDepartmentLabel(departmentJob) or nil
             TriggerClientEvent('duty:setDutyUI', src, {
                 onDuty = dutyData and dutyData.onDuty or false,
                 playerName = name,
                 availableDepartments = availableDepartments,
-                department = dutyData and dutyData.department or nil,
-                callsign = dutyData and dutyData.callsign or nil
+                department = departmentJob,
+                departmentLabel = departmentLabel,
+                callsign = dutyData and dutyData.callsign or nil,
+                startTime = dutyData and dutyData.startTime or nil
             })
         end)
     end)
@@ -180,13 +194,13 @@ RegisterNetEvent('duty:goOnDuty', function(data)
                 description = (name or 'Unknown') .. ' is now on duty.',
                 fields = {
                     { name = 'Discord ID', value = discordId, inline = true },
-                    { name = 'Department', value = department, inline = true },
+                    { name = 'Department', value = GetDepartmentLabel(department), inline = true },
                     { name = 'Callsign', value = callsign, inline = true },
                     { name = 'Clock On', value = os.date('!%Y-%m-%d %H:%M:%S', startTime), inline = false }
                 },
                 color = 65280
             })
-            if Config.Debug then LogDutyChange((name or 'Unknown') .. ' went ON DUTY as ' .. department .. ' (' .. callsign .. ')') end
+            if Config.Debug then LogDutyChange((name or 'Unknown') .. ' went ON DUTY as ' .. GetDepartmentLabel(department) .. ' (' .. callsign .. ')') end
             if Config.DutyStateChangeEvents.OnDuty then
                 TriggerEvent(Config.DutyStateChangeEvents.OnDuty, src, department, callsign)
             end
@@ -217,14 +231,14 @@ RegisterNetEvent('duty:clockOff', function()
                     description = (name or 'Unknown') .. ' is now off duty.',
                     fields = {
                         { name = 'Discord ID', value = discordId, inline = true },
-                        { name = 'Department', value = dutyData.department or 'N/A', inline = true },
+                        { name = 'Department', value = GetDepartmentLabel(dutyData.department or 'N/A'), inline = true },
                         { name = 'Callsign', value = dutyData.callsign or 'N/A', inline = true },
                         { name = 'Clock Off', value = os.date('!%Y-%m-%d %H:%M:%S', endTime), inline = false },
                         { name = 'Shift Duration', value = string.format('%02dh %02dm %02ds', math.floor(duration/3600), math.floor((duration%3600)/60), duration%60), inline = false }
                     },
                     color = 16711680
                 })
-                if Config.Debug then LogDutyChange((name or 'Unknown') .. ' went OFF DUTY from ' .. (dutyData.department or 'N/A') .. ' (' .. (dutyData.callsign or 'N/A') .. ')') end
+                if Config.Debug then LogDutyChange((name or 'Unknown') .. ' went OFF DUTY from ' .. GetDepartmentLabel(dutyData.department or 'N/A') .. ' (' .. (dutyData.callsign or 'N/A') .. ')') end
                 if Config.DutyStateChangeEvents.OffDuty then
                     TriggerEvent(Config.DutyStateChangeEvents.OffDuty, src)
                 end

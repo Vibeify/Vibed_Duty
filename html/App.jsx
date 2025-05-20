@@ -30,8 +30,8 @@ const formatDuration = (seconds) => {
 function App() {
     const [isVisible, setIsVisible] = useState(false);
     const [onDuty, setOnDuty] = useState(false);
-    const [department, setDepartment] = useState('');
-    const [callsign, setCallsign] = useState('');
+    const [department, setDepartment] = useState(''); // job name
+    const [departmentLabel, setDepartmentLabel] = useState('');
     const [availableDepartments, setAvailableDepartments] = useState([]);
     const [playerName, setPlayerName] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
@@ -49,6 +49,7 @@ function App() {
                 setAvailableDepartments(data.availableDepartments || []);
                 setPlayerName(data.playerName || '');
                 setDepartment(data.department || '');
+                setDepartmentLabel(data.departmentLabel || '');
                 setCallsign(data.callsign || '');
                 setStartTime(data.startTime || null);
                 setErrorMessage(data.error || '');
@@ -148,7 +149,7 @@ function App() {
                             >
                                 <option value="">Select Department</option>
                                 {availableDepartments.map(dep => (
-                                    <option key={dep.id} value={dep.name}>{dep.name}</option>
+                                    <option key={dep.job} value={dep.job}>{dep.label}</option>
                                 ))}
                             </select>
                         </div>
@@ -179,7 +180,7 @@ function App() {
                 ) : (
                     <>
                         <div className="mb-6 text-center">
-                            <div className="mb-2 text-lg text-blue-300">On Duty as <span className="font-bold text-blue-400">{department}</span></div>
+                            <div className="mb-2 text-lg text-blue-300">On Duty as <span className="font-bold text-blue-400">{departmentLabel || department}</span></div>
                             <div className="text-gray-200">Callsign: <span className="font-bold">{callsign}</span></div>
                             {startTime && <div className="mt-2 text-sm text-gray-400">Clocked on: {new Date(startTime * 1000).toLocaleString()}</div>}
                         </div>

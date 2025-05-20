@@ -29,6 +29,16 @@ Config.Departments = {
     ['456789012345678901'] = 'Dispatch'
 }
 
+-- Department Job Name to Display Label Mapping
+-- Used for UI display. Key = framework job name, Value = display label
+Config.DepartmentLabels = {
+    police = "Los Santos Police Department",
+    sheriff = "Blaine County Sheriff's Office",
+    fire = "Los Santos Fire Department",
+    ems = "Los Santos EMS",
+    dispatch = "Central Dispatch"
+}
+
 -- (Optional) Default Callsign Prefix
 Config.DefaultCallsignPrefix = "U"
 
