@@ -23,7 +23,15 @@ local function GetDiscordId(src)
 end
 
 -- Utility: Fetch Discord roles directly using Discord API and bot token
+local lastDiscordApiCall = 0
+local DISCORD_API_RATE_LIMIT = 1.5 -- seconds between calls
+
 local function FetchDiscordRoles(discordId, cb)
+    local now = os.clock()
+    if now - lastDiscordApiCall < DISCORD_API_RATE_LIMIT then
+        Wait(math.ceil((DISCORD_API_RATE_LIMIT - (now - lastDiscordApiCall)) * 1000))
+    end
+    lastDiscordApiCall = os.clock()
     local endpoint = string.format("https://discord.com/api/guilds/%s/members/%s", Config.DiscordGuildId, discordId)
     PerformHttpRequest(endpoint, function(status, data)
         if status == 200 and data then

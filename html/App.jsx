@@ -1,4 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { branding } from './App.jsx';
+
+// Branding config (logo and theme color)
+export const branding = {
+    logoUrl: 'https://yourcdn.com/logo.png', // Change to your logo
+    themeColor: 'blue', // Tailwind color name or hex (e.g. 'blue', 'red', '#1e90ff')
+};
 
 const fetchNui = (event, data) => {
     return new Promise((resolve) => {
@@ -31,6 +38,7 @@ function App() {
     const [loading, setLoading] = useState(false);
     const [startTime, setStartTime] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
+    const [noDepartments, setNoDepartments] = useState(false);
 
     useEffect(() => {
         window.addEventListener('message', (event) => {
@@ -45,6 +53,7 @@ function App() {
                 setStartTime(data.startTime || null);
                 setErrorMessage(data.error || '');
                 setSuccessMessage('');
+                setNoDepartments(!data.availableDepartments || data.availableDepartments.length === 0);
             } else if (type === 'closeDutyUI') {
                 setIsVisible(false);
             } else if (type === 'goOnDutyResult') {
@@ -96,15 +105,16 @@ function App() {
     if (!isVisible) return null;
 
     return (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 font-sans">
-            <div className="bg-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-lg border-2 border-blue-700 relative animate-fadeIn">
+        <div className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 font-sans`}>
+            <div className={`bg-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-lg border-2 border-${branding.themeColor}-700 relative animate-fadeIn`}>
                 <div className="flex items-center mb-6">
-                    <img src="https://cdn.discordapp.com/attachments/112233445566778899/123456789012345678/ghostline_logo.png" alt="Logo" className="h-12 w-12 rounded-full mr-4 border-2 border-blue-700" />
+                    <img src={branding.logoUrl} alt="Logo" className={`h-12 w-12 rounded-full mr-4 border-2 border-${branding.themeColor}-700`} />
                     <div>
-                        <h2 className="text-3xl font-extrabold text-blue-400 tracking-wide">Duty Menu</h2>
+                        <h2 className={`text-3xl font-extrabold text-${branding.themeColor}-400 tracking-wide`}>Duty Menu</h2>
                         <div className="text-gray-300 text-sm">Welcome, <span className="font-semibold">{playerName}</span></div>
                     </div>
                 </div>
+                {noDepartments && <div className="bg-yellow-600 text-white p-2 mb-2 rounded text-center animate-shake">You do not have any eligible departments. Please contact staff.</div>}
                 {errorMessage && <div className="bg-red-600 text-white p-2 mb-2 rounded text-center animate-shake">{errorMessage}</div>}
                 {successMessage && <div className="bg-green-600 text-white p-2 mb-2 rounded text-center animate-fadeIn">{successMessage}</div>}
                 {loading && <div className="text-center mb-2 text-blue-300">Loading...</div>}
