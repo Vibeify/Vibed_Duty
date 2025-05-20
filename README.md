@@ -134,6 +134,33 @@ FiveM does **not** natively provide Discord roles. This resource uses your Disco
 
 ---
 
+## Department Job Name to Display Label Mapping
+
+You can map your framework job names (e.g., `police`, `fire`, `ems`, `dispatch`) to custom department display names for the UI. This allows you to show friendly department names in the NUI while keeping backend logic clean.
+
+**Example:**
+```lua
+Config.Departments = {
+    ['123456789012345678'] = 'police',
+    ['234567890123456789'] = 'fire',
+    ['345678901234567890'] = 'ems',
+    ['456789012345678901'] = 'dispatch'
+}
+
+Config.DepartmentLabels = {
+    police = "Los Santos Police Department",
+    sheriff = "Blaine County Sheriff's Office",
+    fire = "Los Santos Fire Department",
+    ems = "Los Santos EMS",
+    dispatch = "Central Dispatch"
+}
+```
+- The value in `Config.Departments` is the job name used by your framework (ESX/QBCore).
+- The key in `Config.DepartmentLabels` is the job name, and the value is the label shown in the UI.
+- You can add or change labels at any time; just restart the resource to update the UI.
+
+---
+
 ## Credits
 
 - Developed by YourName
