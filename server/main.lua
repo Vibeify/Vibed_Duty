@@ -193,7 +193,7 @@ RegisterNetEvent('duty:goOnDuty', function(data)
             FrameworkOnDuty(src, department, callsign)
             TriggerClientEvent('duty:goOnDutyResult', src, { success = true })
         else
-            TriggerClientEvent('duty:goOnDutyResult', src, { success = false, error = 'Failed to update Firestore.' })
+            TriggerClientEvent('duty:goOnDutyResult', src, { success = false, error = 'Failed to save duty status.' })
         end
     end)
 end)
@@ -231,7 +231,7 @@ RegisterNetEvent('duty:clockOff', function()
                 FrameworkOffDuty(src)
                 TriggerClientEvent('duty:clockOffResult', src, { success = true })
             else
-                TriggerClientEvent('duty:clockOffResult', src, { success = false, error = 'Failed to update Firestore.' })
+                TriggerClientEvent('duty:clockOffResult', src, { success = false, error = 'Failed to save duty status.' })
             end
         end)
     end)
