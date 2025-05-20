@@ -4,7 +4,7 @@
    - Place the entire `Vibed_Duty` folder into your server's `resources` directory.
 
 2. **Configure**
-   - Open `config.lua` and set your Discord bot token, guild ID, webhook URLs, and department role IDs.
+   - Open `config.lua` and set your Discord bot token (`Config.DiscordBotToken`), guild ID (`Config.DiscordGuildId`), webhook URLs, and department role IDs.
    - (Optional) Adjust AFK timeout, admin groups, and webhook embed options.
 
 3. **Add to Server Config**
@@ -55,13 +55,13 @@ Vibed_Duty is a drag-and-drop FiveM resource for emergency services (LEO, Fire, 
 
 ## Configuration
 
-Edit `config.lua`:
+Edit `config.lua` to match your server's setup:
 
 - **Discord Webhook URLs**: Set your on-duty and off-duty webhook URLs.
 - **Departments**: Map Discord Role IDs to department names.
 - **Default Callsign Prefix**: (Optional) Used for auto-generating callsigns.
 - **Duty State Change Events**: (Optional) Trigger events in other scripts (e.g., for uniforms, radio access).
-- **Discord Bot API**: Set the endpoint for your Discord bot's role-fetching API.
+- **Discord Bot Token & Guild ID**: Set your Discord bot token (`Config.DiscordBotToken`) and your Discord server's guild ID (`Config.DiscordGuildId`).
 
 Example:
 ```lua
@@ -75,16 +75,17 @@ Config.Departments = {
     ['345678901234567890'] = 'EMS',
     ['456789012345678901'] = 'Dispatch'
 }
-Config.DiscordBotApi = "http://localhost:3000/api/roles"
+Config.DiscordBotToken = "YOUR_DISCORD_BOT_TOKEN_HERE"
+Config.DiscordGuildId = "YOUR_DISCORD_GUILD_ID_HERE"
 ```
 
 ---
 
 ## Discord Role Integration
 
-FiveM does **not** natively provide Discord roles. You must run a simple Discord bot that exposes an API endpoint to fetch a user's roles by Discord ID. Example Node.js/Python bots are available online.
+FiveM does **not** natively provide Discord roles. This resource uses your Discord bot token and guild ID to fetch a user's roles directly from Discord's API.
 
-- The server will call `Config.DiscordBotApi .. '/' .. discordId` to get an array of role IDs.
+- The server will use `Config.DiscordBotToken` and `Config.DiscordGuildId` to get an array of role IDs for each player.
 - The bot must be in your Discord server and have permission to read member roles.
 
 ---
