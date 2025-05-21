@@ -1,5 +1,7 @@
 Config = {}
 
+Config.WebhookUrl = "" -- Set your Discord webhook URL here, or leave blank to disable webhook logging
+
 Config.Departments = {
     {
         name = "LSPD",

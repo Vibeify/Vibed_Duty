@@ -27,6 +27,8 @@ A simple, minimal FiveM duty management system for emergency services, using ox_
 - **Ace Permissions**: Department access is controlled by ace permissions (see `config.lua`).
 - **ox_lib UI**: All menus and notifications use ox_lib—no NUI, no HTML, no React.
 - **Minimal, Fast, Reliable**: No database, no webhooks, no Discord integration by default (add your own if needed).
+- **Webhook Logging**: If `Config.WebhookUrl` is set, all duty toggles are logged to Discord with a simple embed.
+- **AFK/Disconnect Handling**: Players are automatically clocked off (with webhook logging) if they disconnect or are AFK for 30 minutes.
 
 ---
 
@@ -41,7 +43,7 @@ A simple, minimal FiveM duty management system for emergency services, using ox_
 
 ## Configuration
 
-Edit `config.lua` to define your departments and ace permissions:
+Edit `config.lua` to define your departments, ace permissions, and (optionally) your webhook URL:
 
 ```lua
 Config.Departments = {
@@ -49,9 +51,11 @@ Config.Departments = {
     { name = "BCSO", ace = "duty.bcso" },
     { name = "EMS", ace = "duty.ems" }
 }
+Config.WebhookUrl = "https://discord.com/api/webhooks/your_webhook_here"
 ```
 - Each department has a `name` (shown in the menu) and an `ace` permission (required to access).
 - Set up your ace permissions in your server.cfg or permissions.cfg.
+- If `Config.WebhookUrl` is set, all duty toggles are logged to Discord.
 
 ---
 

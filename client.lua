@@ -23,3 +23,11 @@ AddEventHandler("duty:openMenu", function(allowedDepartments)
 
     lib.showContext('duty_menu')
 end)
+
+-- AFK ping: call this on any player activity (movement, menu, etc)
+Citizen.CreateThread(function()
+    while true do
+        Wait(60000) -- every 60 seconds
+        TriggerServerEvent('duty:playerActive')
+    end
+end)
