@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+// Use global React for FiveM NUI compatibility
+const React = window.React;
+const { useEffect, useState } = React;
 
 function App() {
     const [isVisible, setIsVisible] = useState(false);
