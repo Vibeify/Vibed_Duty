@@ -26,9 +26,10 @@ A simple, minimal FiveM duty management system for emergency services, using ox_
 - **/duty Command**: Players open a context menu to go on/off duty for allowed departments.
 - **Ace Permissions**: Department access is controlled by ace permissions (see `config.lua`).
 - **ox_lib UI**: All menus and notifications use ox_lib—no NUI, no HTML, no React.
-- **Minimal, Fast, Reliable**: No database, no webhooks, no Discord integration by default (add your own if needed).
-- **Webhook Logging**: If `Config.WebhookUrl` is set, all duty toggles are logged to Discord with a simple embed.
-- **AFK/Disconnect Handling**: Players are automatically clocked off (with webhook logging) if they disconnect or are AFK for 30 minutes.
+- **Minimal, Fast, Reliable**: No database, no external dependencies beyond ox_lib.
+- **Discord Webhook Logging**: If `Config.WebhookUrl` is set, all duty toggles (on/off), AFK auto clock-off, and disconnects are logged to Discord with time tracking stats.
+- **AFK/Disconnect Handling**: Players are automatically clocked off (with webhook logging) if they disconnect or are AFK for a configurable timeout (default 30 minutes).
+- **Session & Total Time Tracking**: Tracks and logs each player's duty time per department, included in webhook logs.
 
 ---
 
