@@ -1,39 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { branding } from './App.jsx';
-
-// Branding config (logo and theme color)
-export const branding = {
-    logoUrl: 'https://yourcdn.com/logo.png', // Change to your logo
-    themeColor: 'blue', // Tailwind color name or hex (e.g. 'blue', 'red', '#1e90ff')
-};
-
-const fetchNui = (event, data) => {
-    return new Promise((resolve) => {
-        window.fetch(`https://${GetParentResourceName()}/${event}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
-            body: JSON.stringify(data)
-        })
-        .then(resp => resp.json())
-        .then(resolve)
-        .catch(() => resolve(null));
-    });
-};
-
-const formatDuration = (seconds) => {
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = seconds % 60;
-    return `${h}h ${m}m ${s}s`;
-};
 
 function App() {
     const [isVisible, setIsVisible] = useState(false);
     const [onDuty, setOnDuty] = useState(false);
-    const [department, setDepartment] = useState(''); // job name
+    const [department, setDepartment] = useState('');
     const [departmentLabel, setDepartmentLabel] = useState('');
     const [availableDepartments, setAvailableDepartments] = useState([]);
     const [playerName, setPlayerName] = useState('');
+    const [callsign, setCallsign] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
     const [loading, setLoading] = useState(false);
     const [startTime, setStartTime] = useState(null);
@@ -74,76 +48,31 @@ function App() {
     }, []);
 
     useEffect(() => {
-        fetchNui('setNuiFocus', { focus: isVisible, cursor: isVisible });
-    }, [isVisible]);
-
-    // Add this to fire on any UI interaction
-    const markActive = () => {
-        fetchNui('playerActive');
-    };
-
-    // Call markActive on all relevant UI events
-    useEffect(() => {
         if (isVisible) {
-            window.addEventListener('mousemove', markActive);
-            window.addEventListener('keydown', markActive);
-            window.addEventListener('mousedown', markActive);
+            window.postMessage({ type: 'setNuiFocus', data: { focus: true, cursor: true } }, '*');
+        } else {
+            window.postMessage({ type: 'setNuiFocus', data: { focus: false, cursor: false } }, '*');
         }
-        return () => {
-            window.removeEventListener('mousemove', markActive);
-            window.removeEventListener('keydown', markActive);
-            window.removeEventListener('mousedown', markActive);
-        };
     }, [isVisible]);
-
-    const handleGoOnDuty = async () => {
-        setLoading(true);
-        setErrorMessage('');
-        setSuccessMessage('');
-        if (!department || !callsign) {
-            setErrorMessage('Please select a department and enter a callsign.');
-            setLoading(false);
-            return;
-        }
-        await fetchNui('goOnDuty', { department, callsign });
-        setLoading(false);
-    };
-
-    const handleClockOff = async () => {
-        setLoading(true);
-        setErrorMessage('');
-        setSuccessMessage('');
-        await fetchNui('clockOff');
-        setLoading(false);
-    };
-
-    const handleCancel = () => {
-        fetchNui('cancelDutyUI');
-        setIsVisible(false);
-    };
 
     if (!isVisible) return null;
 
     return (
-        <div className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50 font-sans`}>
-            <div className={`bg-gray-900 rounded-xl shadow-2xl p-8 w-full max-w-lg border-2 border-${branding.themeColor}-700 relative animate-fadeIn`}>
-                <div className="flex items-center mb-6">
-                    <img src={branding.logoUrl} alt="Logo" className={`h-12 w-12 rounded-full mr-4 border-2 border-${branding.themeColor}-700`} />
-                    <div>
-                        <h2 className={`text-3xl font-extrabold text-${branding.themeColor}-400 tracking-wide`}>Duty Menu</h2>
-                        <div className="text-gray-300 text-sm">Welcome, <span className="font-semibold">{playerName}</span></div>
-                    </div>
-                </div>
-                {noDepartments && <div className="bg-yellow-600 text-white p-2 mb-2 rounded text-center animate-shake">You do not have any eligible departments. Please contact staff.</div>}
-                {errorMessage && <div className="bg-red-600 text-white p-2 mb-2 rounded text-center animate-shake">{errorMessage}</div>}
-                {successMessage && <div className="bg-green-600 text-white p-2 mb-2 rounded text-center animate-fadeIn">{successMessage}</div>}
-                {loading && <div className="text-center mb-2 text-blue-300">Loading...</div>}
+        <div style={{position:'fixed',top:0,left:0,width:'100vw',height:'100vh',background:'rgba(0,0,0,0.25)',zIndex:1000,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <div style={{background:'#fff',borderRadius:16,boxShadow:'0 8px 32px rgba(0,0,0,0.25)',padding:32,minWidth:340,maxWidth:400,width:'100%',display:'flex',flexDirection:'column',alignItems:'center',position:'relative'}}>
+                <img src="https://ghostline.network/assets/img/logo.png" alt="Logo" style={{width:64,height:64,borderRadius:12,marginBottom:16}} />
+                <h2 style={{fontSize:28,fontWeight:800,marginBottom:8,color:'#222'}}>Duty Menu</h2>
+                <div style={{color:'#666',marginBottom:20}}>Welcome, <b>{playerName}</b></div>
+                {noDepartments && <div style={{background:'#ffe066',color:'#222',padding:8,borderRadius:6,marginBottom:10,textAlign:'center'}}>You do not have any eligible departments. Please contact staff.</div>}
+                {errorMessage && <div style={{background:'#ff6b6b',color:'#fff',padding:8,borderRadius:6,marginBottom:10,textAlign:'center'}}>{errorMessage}</div>}
+                {successMessage && <div style={{background:'#51cf66',color:'#fff',padding:8,borderRadius:6,marginBottom:10,textAlign:'center'}}>{successMessage}</div>}
+                {loading && <div style={{color:'#339af0',marginBottom:10}}>Loading...</div>}
                 {!onDuty ? (
                     <>
-                        <div className="mb-4">
-                            <label className="block mb-1 text-blue-300 font-semibold">Department</label>
+                        <div style={{width:'100%',marginBottom:16}}>
+                            <label style={{display:'block',marginBottom:4,color:'#222',fontWeight:600}}>Department</label>
                             <select
-                                className="w-full p-2 rounded bg-gray-800 text-white border border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ccc',background:'#f8f9fa',color:'#222'}}
                                 value={department}
                                 onChange={e => setDepartment(e.target.value)}
                             >
@@ -153,10 +82,10 @@ function App() {
                                 ))}
                             </select>
                         </div>
-                        <div className="mb-6">
-                            <label className="block mb-1 text-blue-300 font-semibold">Callsign</label>
+                        <div style={{width:'100%',marginBottom:24}}>
+                            <label style={{display:'block',marginBottom:4,color:'#222',fontWeight:600}}>Callsign</label>
                             <input
-                                className="w-full p-2 rounded bg-gray-800 text-white border border-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                style={{width:'100%',padding:8,borderRadius:6,border:'1px solid #ccc',background:'#f8f9fa',color:'#222'}}
                                 type="text"
                                 value={callsign}
                                 onChange={e => setCallsign(e.target.value)}
@@ -164,47 +93,74 @@ function App() {
                                 maxLength={12}
                             />
                         </div>
-                        <div className="flex justify-between gap-4">
+                        <div style={{display:'flex',width:'100%',gap:8}}>
                             <button
-                                className="flex-1 bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded text-white font-bold shadow transition-all duration-150"
-                                onClick={handleGoOnDuty}
+                                style={{flex:1,background:'#339af0',color:'#fff',padding:'10px 0',border:'none',borderRadius:6,fontWeight:700,fontSize:16,cursor:'pointer'}}
+                                onClick={async()=>{
+                                    setLoading(true);
+                                    setErrorMessage('');
+                                    setSuccessMessage('');
+                                    if (!department || !callsign) {
+                                        setErrorMessage('Please select a department and enter a callsign.');
+                                        setLoading(false);
+                                        return;
+                                    }
+                                    window.fetch(`https://${GetParentResourceName()}/goOnDuty`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+                                        body: JSON.stringify({ department, callsign })
+                                    });
+                                    setLoading(false);
+                                }}
                                 disabled={loading}
                             >Go On Duty</button>
                             <button
-                                className="flex-1 bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded text-white font-semibold shadow transition-all duration-150"
-                                onClick={handleCancel}
+                                style={{flex:1,background:'#adb5bd',color:'#222',padding:'10px 0',border:'none',borderRadius:6,fontWeight:700,fontSize:16,cursor:'pointer'}}
+                                onClick={()=>{
+                                    window.fetch(`https://${GetParentResourceName()}/cancelDutyUI`, {method:'POST'});
+                                    setIsVisible(false);
+                                }}
                                 disabled={loading}
                             >Cancel</button>
                         </div>
                     </>
                 ) : (
                     <>
-                        <div className="mb-6 text-center">
-                            <div className="mb-2 text-lg text-blue-300">On Duty as <span className="font-bold text-blue-400">{departmentLabel || department}</span></div>
-                            <div className="text-gray-200">Callsign: <span className="font-bold">{callsign}</span></div>
-                            {startTime && <div className="mt-2 text-sm text-gray-400">Clocked on: {new Date(startTime * 1000).toLocaleString()}</div>}
+                        <div style={{width:'100%',marginBottom:24,textAlign:'center'}}>
+                            <div style={{fontSize:20,color:'#339af0',fontWeight:700,marginBottom:4}}>On Duty as <span>{departmentLabel || department}</span></div>
+                            <div style={{color:'#555'}}>Callsign: <b>{callsign}</b></div>
+                            {startTime && <div style={{marginTop:8,fontSize:13,color:'#888'}}>Clocked on: {new Date(startTime * 1000).toLocaleString()}</div>}
                         </div>
-                        <div className="flex justify-between gap-4">
+                        <div style={{display:'flex',width:'100%',gap:8}}>
                             <button
-                                className="flex-1 bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-white font-bold shadow transition-all duration-150"
-                                onClick={handleClockOff}
+                                style={{flex:1,background:'#ff6b6b',color:'#fff',padding:'10px 0',border:'none',borderRadius:6,fontWeight:700,fontSize:16,cursor:'pointer'}}
+                                onClick={async()=>{
+                                    setLoading(true);
+                                    setErrorMessage('');
+                                    setSuccessMessage('');
+                                    window.fetch(`https://${GetParentResourceName()}/clockOff`, {method:'POST'});
+                                    setLoading(false);
+                                }}
                                 disabled={loading}
                             >Clock Off</button>
                             <button
-                                className="flex-1 bg-gray-700 hover:bg-gray-800 px-4 py-2 rounded text-white font-semibold shadow transition-all duration-150"
-                                onClick={handleCancel}
+                                style={{flex:1,background:'#adb5bd',color:'#222',padding:'10px 0',border:'none',borderRadius:6,fontWeight:700,fontSize:16,cursor:'pointer'}}
+                                onClick={()=>{
+                                    window.fetch(`https://${GetParentResourceName()}/cancelDutyUI`, {method:'POST'});
+                                    setIsVisible(false);
+                                }}
                                 disabled={loading}
                             >Cancel</button>
                         </div>
                         {startTime && (
-                            <div className="mt-4 text-center text-xs text-gray-400">
+                            <div style={{marginTop:16,textAlign:'center',fontSize:12,color:'#888'}}>
                                 Shift started: {new Date(startTime * 1000).toLocaleString()}<br />
-                                {`Duration: ${formatDuration(Math.floor((Date.now()/1000) - startTime))}`}
+                                {/* Duration can be added if needed */}
                             </div>
                         )}
                     </>
                 )}
-                <div className="absolute bottom-2 right-4 text-xs text-gray-600 opacity-60 select-none">Vibed_Duty &bull; {new Date().getFullYear()}</div>
+                <div style={{position:'absolute',bottom:8,right:16,fontSize:11,color:'#bbb',opacity:0.7}}>Vibed_Duty &bull; {new Date().getFullYear()}</div>
             </div>
         </div>
     );

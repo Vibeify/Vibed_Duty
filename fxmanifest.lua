@@ -1,7 +1,7 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'YourName'
+author 'Vibed Development'
 description 'Comprehensive Duty Management System for Emergency Services'
 version '1.0.0'
 
@@ -22,9 +22,6 @@ ui_page 'html/index.html'
 files {
     'html/index.html',
     'html/static/js/*.js',
-    'html/static/css/*.css',
-    'html/static/media/*',
-    'html/favicon.ico',
     'html/style.css'
 }
 
