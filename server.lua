@@ -41,7 +41,7 @@ AddEventHandler('playerDropped', function(reason)
                     footer = { text = os.date("%Y-%m-%d %H:%M:%S") }
                 }
             }
-            PerformHttpRequest(webhook, function() end, 'POST', json.encode({embeds = embed}), { ['Content-Type'] = 'application/json' })
+            PerformHttpRequest(webhook, function() end, 'POST', json.encode({embeds = embeds}), { ['Content-Type'] = 'application/json' })
         end
     end
     dutyState[src] = nil
