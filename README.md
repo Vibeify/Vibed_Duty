@@ -1,179 +1,118 @@
-# Quickstart
+# Vibed_Duty (ox_lib Minimal Duty Menu)
+
+A simple, minimal FiveM duty management system for emergency services, using ox_lib for all UI and notifications. No React, no NUI HTML, no build step—just pure Lua and ox_lib context menus.
+
+---
+
+## Quickstart
 
 1. **Drag and Drop**
    - Place the entire `Vibed_Duty` folder into your server's `resources` directory.
 
 2. **Configure**
-   - Open `config.lua` and set your Discord bot token (`Config.DiscordBotToken`), guild ID (`Config.DiscordGuildId`), webhook URLs, and department role IDs.
-   - (Optional) Adjust AFK timeout, admin groups, and webhook embed options.
+   - Edit `config.lua` to set up your departments and ace permissions.
 
 3. **Add to Server Config**
+   - Add `ensure ox_lib` (required dependency)
    - Add `ensure Vibed_Duty` to your `server.cfg`.
 
-4. **Invite Your Bot**
-   - Make sure your Discord bot is in your server with the `View Members` permission.
-
-5. **Done!**
-   - Use `/duty` in-game to open the menu.
-   - Admins can use `/dutycheck` to see who is on duty.
-
----
-
-# Vibed_Duty - Simple & Robust Duty Management for FiveM Emergency Services
-
-## Overview
-
-Vibed_Duty is a drag-and-drop FiveM resource for emergency services (LEO, Fire, EMS, Dispatch) that is easy to set up, requires no database, and is fully integrated with Discord for department selection and logging. All duty state is saved in a local file—no Firestore, no SQL, no hassle.
+4. **Done!**
+   - Use `/duty` in-game to open the ox_lib context menu.
 
 ---
 
 ## Features
 
-- **/duty Command**: Players clock on/off duty via an in-game command and a modern NUI panel.
-- **Discord Role-Based Departments**: Only departments matching the player's Discord roles are selectable.
-- **Callsign Input**: Players enter their callsign when going on duty.
-- **Persistent Duty State**: All data is saved in a local file and survives restarts.
-- **Discord Webhook Logging**: All clock-on/off events are logged to Discord webhooks.
-- **No Database Required**: No SQL, no Firestore, no cloud setup—just works.
-- **Modern NUI**: Clean, responsive React UI with Tailwind CSS.
+- **/duty Command**: Players open a context menu to go on/off duty for allowed departments.
+- **Ace Permissions**: Department access is controlled by ace permissions (see `config.lua`).
+- **ox_lib UI**: All menus and notifications use ox_lib—no NUI, no HTML, no React.
+- **Minimal, Fast, Reliable**: No database, no webhooks, no Discord integration by default (add your own if needed).
+- **Webhook Logging**: If `Config.WebhookUrl` is set, all duty toggles are logged to Discord with a simple embed.
+- **AFK/Disconnect Handling**: Players are automatically clocked off (with webhook logging) if they disconnect or are AFK for 30 minutes.
 
 ---
 
-## Installation
+## File Structure
 
-1. **Drag and Drop**
-   - Place the entire `Vibed_Duty` folder into your server's `resources` directory.
-
-2. **Add to Server Config**
-   - Add `ensure Vibed_Duty` to your `server.cfg`.
-
-3. **Dependencies**
-   - You must run a simple Discord bot with an API endpoint for role fetching (see below).
-   - No database or build step required.
+- `config.lua` — Department and ace permission configuration.
+- `client.lua` — Handles `/duty` command and shows ox_lib context menu.
+- `server.lua` — Checks ace permissions and handles duty toggling.
+- `fxmanifest.lua` — Resource manifest, includes ox_lib as a dependency.
 
 ---
 
 ## Configuration
 
-Edit `config.lua` to match your server's setup:
+Edit `config.lua` to define your departments, ace permissions, and (optionally) your webhook URL:
 
-- **Discord Webhook URLs**: Set your on-duty and off-duty webhook URLs.
-- **Departments**: Map Discord Role IDs to department names.
-- **Default Callsign Prefix**: (Optional) Used for auto-generating callsigns.
-- **Duty State Change Events**: (Optional) Trigger events in other scripts (e.g., for uniforms, radio access).
-- **Discord Bot Token & Guild ID**: Set your Discord bot token (`Config.DiscordBotToken`) and your Discord server's guild ID (`Config.DiscordGuildId`).
-
-Example:
 ```lua
-Config.DiscordWebhookUrls = {
-    OnDuty = "https://discord.com/api/webhooks/ON_DUTY_WEBHOOK",
-    OffDuty = "https://discord.com/api/webhooks/OFF_DUTY_WEBHOOK"
-}
 Config.Departments = {
-    ['123456789012345678'] = 'Law Enforcement',
-    ['234567890123456789'] = 'Fire Department',
-    ['345678901234567890'] = 'EMS',
-    ['456789012345678901'] = 'Dispatch'
+    { name = "LSPD", ace = "duty.lspd" },
+    { name = "BCSO", ace = "duty.bcso" },
+    { name = "EMS", ace = "duty.ems" }
 }
-Config.DiscordBotToken = "YOUR_DISCORD_BOT_TOKEN_HERE"
-Config.DiscordGuildId = "YOUR_DISCORD_GUILD_ID_HERE"
+Config.WebhookUrl = "https://discord.com/api/webhooks/your_webhook_here"
 ```
-
----
-
-## Discord Role Integration
-
-FiveM does **not** natively provide Discord roles. This resource uses your Discord bot token and guild ID to fetch a user's roles directly from Discord's API.
-
-- The server will use `Config.DiscordBotToken` and `Config.DiscordGuildId` to get an array of role IDs for each player.
-- The bot must be in your Discord server and have permission to read member roles.
-
----
-
-## Duty State Persistence (No Database Required!)
-
-- Duty state is stored in a simple local file: `data/duty_status.json`.
-- All on-duty/off-duty actions are saved and loaded automatically.
-- No external database or cloud service is required.
-- The file is human-readable and easy to back up or edit.
+- Each department has a `name` (shown in the menu) and an `ace` permission (required to access).
+- Set up your ace permissions in your server.cfg or permissions.cfg.
+- If `Config.WebhookUrl` is set, all duty toggles are logged to Discord.
 
 ---
 
 ## Usage
 
-- **/duty**: Opens the NUI panel. If off-duty, shows the "Go On Duty" form. If on-duty, shows the "Clock Off" confirmation.
-- **Department Selection**: Only shows departments matching the player's Discord roles.
-- **Callsign**: Enter your callsign when going on duty.
-- **Clock Off**: When clocking off, the shift duration is calculated and logged.
-
----
-
-## NUI (React App)
-
-- Clean, responsive UI with Tailwind CSS.
-- Loading indicators and error messages for user feedback.
-- Seamless focus handling for immersive experience.
-- No build step required—just drag and drop.
+- **/duty**: Opens the ox_lib context menu. Only departments for which the player has ace permission are shown.
+- **Go On/Off Duty**: Select a department to toggle duty status (server prints to console; expand as needed).
 
 ---
 
 ## Customization & Extensibility
 
-- **Framework Hooks**: Use `Config.DutyStateChangeEvents` to trigger events in your job/uniform/radio scripts.
-- **UI**: Edit `html/App.jsx` and re-bundle if you want to customize the NUI.
-- **Logging**: Webhook payloads are easily customizable in `server/main.lua`.
+- Add Discord/webhook/DB logic in `server.lua` if needed.
+- Change menu titles, add notifications, or extend logic using ox_lib's API.
 
 ---
 
 ## Troubleshooting
 
-- **NUI Not Opening**: Ensure all files are present and `ui_page` is set correctly in `fxmanifest.lua`.
-- **Discord Roles Not Detected**: Check your Discord bot API and ensure the bot is in your server.
-- **Duty State Not Saving**: Ensure the `data/` folder exists and is writable by the server.
-- **Webhooks Not Sending**: Double-check your webhook URLs and Discord permissions.
-
----
-
-## Department Job Name to Display Label Mapping
-
-You can map your framework job names (e.g., `police`, `fire`, `ems`, `dispatch`) to custom department display names for the UI. This allows you to show friendly department names in the NUI while keeping backend logic clean.
-
-**Example:**
-```lua
-Config.Departments = {
-    ['123456789012345678'] = 'police',
-    ['234567890123456789'] = 'fire',
-    ['345678901234567890'] = 'ems',
-    ['456789012345678901'] = 'dispatch'
-}
-
-Config.DepartmentLabels = {
-    police = "Los Santos Police Department",
-    sheriff = "Blaine County Sheriff's Office",
-    fire = "Los Santos Fire Department",
-    ems = "Los Santos EMS",
-    dispatch = "Central Dispatch"
-}
-```
-- The value in `Config.Departments` is the job name used by your framework (ESX/QBCore).
-- The key in `Config.DepartmentLabels` is the job name, and the value is the label shown in the UI.
-- You can add or change labels at any time; just restart the resource to update the UI.
+- **Menu Not Opening**: Ensure `ox_lib` is installed and started before this resource.
+- **No Departments Shown**: Check your ace permissions and department config.
 
 ---
 
 ## Credits
 
-- Developed by YourName
-- React, Tailwind CSS, and FiveM community
+- Built with [ox_lib](https://github.com/overextended/ox_lib).
+- Minimal logic and config by Vibed_Duty authors.
 
 ---
 
 ## License
 
-MIT or your preferred license.
+MIT License
+
+Copyright (c) 2025 Vibed Development
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
 ## Need Help?
 
-Open an issue or contact the author for support or customizations.
+Open an issue or ask in https://discord.gg/7AcwrDfuPv
