@@ -23,10 +23,10 @@ Config.WebhookEmbed = {
 -- Department Mapping: [Discord Role ID] = Department Name
 -- Only departments for which the user has the corresponding Discord role will be visible/selectable
 Config.Departments = {
-    ['123456789012345678'] = 'Law Enforcement',
-    ['234567890123456789'] = 'Fire Department',
-    ['345678901234567890'] = 'EMS',
-    ['456789012345678901'] = 'Dispatch'
+    ['123456789012345678'] = 'police',
+    ['234567890123456789'] = 'fire',
+    ['345678901234567890'] = 'ems',
+    ['456789012345678901'] = 'dispatch'
 }
 
 -- Department Job Name to Display Label Mapping
