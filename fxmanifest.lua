@@ -1,31 +1,20 @@
 fx_version 'cerulean'
 game 'gta5'
 
-author 'Vibed Development'
-description 'Comprehensive Duty Management System for Emergency Services'
-version '1.0.0'
+lua54 'yes'
 
-shared_scripts {
-    'config.lua'
+shared_script '@ox_lib/init.lua'
+
+client_scripts {
+    'config.lua',  
+    'client.lua'
 }
 
 server_scripts {
-    'server/main.lua'
-}
-
-client_scripts {
-    'client/main.lua'
-}
-
-ui_page 'html/index.html'
-
-files {
-    'html/index.html',
-    'html/static/js/*.js',
-    'html/style.css'
+    'config.lua',  
+    'server.lua'
 }
 
 dependencies {
-    -- 'es_extended', -- Uncomment if using ESX
-    -- 'qb-core',     -- Uncomment if using QBCore
+    'ox_lib'
 }

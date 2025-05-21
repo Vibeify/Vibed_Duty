@@ -1,0 +1,12 @@
+Delete the following files and folders to match the Ghostline-Duty-Menu structure:
+
+html/App.jsx
+html/style.css
+html/static/
+
+Only keep:
+- html/index.html
+- html/main.js
+- html/ghostline.css
+
+This will ensure your NUI is clean and exactly like Ghostline's.
