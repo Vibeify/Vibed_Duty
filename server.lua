@@ -14,7 +14,7 @@ end)
 
 local dutyState = {}
 local lastActive = {}
-local AFK_TIMEOUT = 30 * 60 -- 30 minutes in seconds, adjust as needed or make configurable
+local AFK_TIMEOUT = (Config.AFKTimeoutMinutes or 30) * 60 -- Minutes to seconds
 
 AddEventHandler('playerDropped', function(reason)
     local src = source
